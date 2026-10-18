@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echo</title>
+<style>
+* { margin: 0; padding: 0; }
+body {
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+  background-color: #87CEEB;
+  background-image: url('sky-small.png');
+  background-repeat: repeat;
+  background-position: top left;
+  color: #333;
+  font-size: 12px;
+  line-height: 1.4;
+}
+a { color: #026af7; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.header {
+  background: #000 url('bar1.jpg') repeat-x top left;
+  border-bottom: none;
+  padding: 6px 0;
+  overflow: hidden;
+}
+.header-inner {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 8px;
+  overflow: hidden;
+  position: relative;
+}
+.nav-left {
+  float: left;
+  padding-top: 8px;
+}
+.nav-left a {
+  margin-right: 10px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+}
+.logo {
+  position: absolute;
+  left: 50%;
+  margin-left: -21px;
+  top: -2px;
+  z-index: 10;
+}
+.header-right {
+  float: right;
+  padding-top: 4px;
+}
+.container {
+  width: 100%;
+  max-width: 960px;
+  margin: 8px auto;
+  padding: 0 8px;
+  overflow: hidden;
+}
+.main {
+  float: left;
+  width: 64%;
+  background: #fff;
+  border: 1px solid #b8d4f0;
+  padding: 8px;
+}
+.sidebar {
+  float: right;
+  width: 34%;
+}
+@media screen and (max-width: 600px) {
+  .main, .sidebar {
+    float: none;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .nav-left a { font-size: 10px; margin-right: 6px; }
+  .header-search input { width: 90px; }
+  .logo {
+    position: static;
+    float: left;
+    margin: 4px 8px 0 0;
+  }
+  .header-right { float: none; clear: both; padding-top: 4px; }
+}
+.logo img {
+  height: 28px;
+  width: 42px;
+}
+.header-right {
+  float: right;
+  padding-top: 4px;
+}
+.header-search {
+  float: left;
+  margin-right: 10px;
+  position: relative;
+}
+.header-search input {
+  padding: 3px 22px 3px 6px;
+  border: 1px solid #555;
+  width: 140px;
+  font-size: 11px;
+  font-family: "Lucida Grande", Arial, sans-serif;
+  background: #333;
+  color: #fff;
+}
+.header-search button {
+  position: absolute;
+  right: 2px;
+  top: 1px;
+  padding: 2px 4px;
+  background: transparent;
+  color: #aaa;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+.nav-right {
+  float: left;
+  padding-top: 4px;
+}
+.nav-right a {
+  margin-left: 10px;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+}
+.container {
+  max-width: 960px;
+  margin: 8px auto;
+  padding: 0 8px;
+  overflow: hidden;
+}
+.page { display: none; }
+.page.active { display: block; }
+.main {
+  float: left;
+  width: 64%;
+  background: #fff;
+  border: 1px solid #b8d4f0;
+  padding: 8px;
+}
+.sidebar {
+  float: right;
+  width: 32%;
+}
+.composer {
+  border: 1px solid #aaa;
+  padding: 6px;
+  margin-bottom: 8px;
+  background: #f5f5f5;
+}
+.composer h3 {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #333;
+}
+#tweet-input {
+  width: 97%;
+  height: 48px;
+  border: 1px solid #999;
+  padding: 4px;
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, sans-serif;
+  font-size: 13px;
+}
+.composer-footer { margin-top: 4px; overflow: hidden; }
+#char-count { float: left; font-size: 18px; font-weight: bold; color: #999; }
+#char-count.warning { color: #c00; }
+#tweet-btn {
+  float: right;
+  background: #026af7;
+  color: #fff;
+  border: 1px solid #0250c0;
+  padding: 3px 10px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 12px;
+}
+#tweet-btn:hover { background: #0250c0; }
+.timeline { list-style: none; }
+.tweet {
+  overflow: hidden;
+  padding: 6px 0;
+  border-bottom: 1px solid #ddd;
+}
+.avatar {
+  float: left;
+  width: 48px;
+  height: 48px;
+  background: #e0e0e0 url('account.png') no-repeat center center;
+  background-size: cover;
+  border: 1px solid #ccc;
+  text-align: center;
+  line-height: 48px;
+  font-size: 16px;
+  color: #666;
+  margin-right: 6px;
+  overflow: hidden;
+}
+.username { font-weight: bold; color: #006699; }
+.screen-name { color: #888; margin-left: 3px; }
+.tweet-text { margin: 2px 0; }
+.tweet-meta { font-size: 10px; color: #888; }
+.tweet-actions { margin-top: 2px; font-size: 10px; }
+.tweet-actions span { margin-right: 8px; color: #888; cursor: pointer; }
+.tweet-actions span:hover { color: #006699; }
+.sidebar-box {
+  background: #e8f2fc;
+  border: 1px solid #b8d4f0;
+  padding: 6px;
+  margin-bottom: 8px;
+}
+.sidebar-box h3 {
+  font-size: 13px;
+  border-bottom: 1px solid #b8d4f0;
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+  background: transparent;
+  color: #0250c0;
+}
+.profile-mini { overflow: hidden; }
+.profile-mini .avatar { width: 36px; height: 36px; line-height: 36px; }
+.stats { overflow: hidden; text-align: center; margin-top: 4px; font-size: 10px; }
+.stats div { float: left; width: 33%; }
+.stats strong { display: block; font-size: 12px; color: #006699; }
+.trend { margin: 3px 0; }
+.trend a { font-weight: bold; }
+.search-box { margin-bottom: 6px; }
+.search-box input { width: 70%; padding: 2px; border: 1px solid #999; }
+.search-box button { padding: 2px 6px; background: #026af7; color: #fff; border: 1px solid #0250c0; }
+.footer {
+  clear: both;
+  max-width: 960px;
+  margin: 10px auto;
+  padding: 6px;
+  font-size: 10px;
+  color: #0250c0;
+  text-align: center;
+}
+.footer a { margin: 0 4px; color: #0250c0; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-inner">
+    <div class="nav-left">
+      <a href="#" id="nav-home" class="active" onclick="showPage('home'); return false;"><img src="home-icon.png" alt="Home" style="height:16px;vertical-align:middle;margin-right:3px;"> Home</a>
+      <a href="#" id="nav-profile" onclick="showPage('profile'); return false;">@ Connect</a>
+      <a href="#" id="nav-find" onclick="showPage('find'); return false;"># Discover</a>
+    </div>
+    <div class="logo"><img src="echo-logo-small.png" alt="Echo"></div>
+    <div class="header-right">
+      <div class="header-search">
+        <input type="text" id="header-search" placeholder="Search">
+        <button onclick="alert('Search: ' + document.getElementById('header-search').value)">🔍</button>
+      </div>
+      <div class="nav-right">
+        <a href="#" onclick="showPage('profile'); return false;">👤</a>
+        <a href="#" onclick="alert('Compose'); return false;">✏️</a>
+      </div>
+    </div>
+  </div></div>
+
+<div class="container">
+  <!-- HOME PAGE -->
+  <div id="page-home" class="page active">
+    <div class="main">
+      <div class="composer">
+        <h3>What are you doing?</h3>
+        <textarea id="tweet-input" maxlength="140"></textarea>
+        <div class="composer-footer">
+          <div id="char-count">140</div>
+          <button id="tweet-btn">Update</button>
+        </div>
+      </div>
+      <ul class="timeline" id="timeline"></ul>
+    </div>
+    <div class="sidebar">
+      <div class="sidebar-box">
+        <div class="search-box">
+          <input type="text" id="search" placeholder="Search Echo">
+          <button onclick="alert('Search: ' + document.getElementById('search').value)">Go</button>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <div class="profile-mini">
+          <div class="avatar"></div>
+          <div>
+            <strong>You</strong><br>
+            <span class="screen-name">@you</span>
+          </div>
+        </div>
+        <div class="stats">
+          <div><strong id="tweet-count">0</strong>updates</div>
+          <div><strong>42</strong>following</div>
+          <div><strong>128</strong>followers</div>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h3>Trending Topics</h3>
+        <div class="trend"><a href="#" onclick="alert('Trend: #followfriday'); return false;">#followfriday</a></div>
+        <div class="trend"><a href="#" onclick="alert('Trend: #iranelection'); return false;">#iranelection</a></div>
+        <div class="trend"><a href="#" onclick="alert('Trend: Harry Potter'); return false;">Harry Potter</a></div>
+        <div class="trend"><a href="#" onclick="alert('Trend: Google Voice'); return false;">Google Voice</a></div>
+        <div class="trend"><a href="#" onclick="alert('Trend: #musicmonday'); return false;">#musicmonday</a></div>
+        <div class="trend"><a href="#" onclick="alert('Trend: Apple'); return false;">Apple</a></div>
+      </div>
+      <div class="sidebar-box">
+        <h3>Who to follow</h3>
+        <div class="trend"><a href="#" onclick="showPage('profile'); return false;">@alex</a> Alex Rivera</div>
+        <div class="trend"><a href="#" onclick="showPage('profile'); return false;">@sam</a> Sam Chen</div>
+        <div class="trend"><a href="#" onclick="showPage('profile'); return false;">@jordan</a> Jordan Lee</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div id="page-profile" class="page">
+    <div class="main">
+      <div class="sidebar-box">
+        <div class="profile-mini">
+          <div class="avatar" style="width:64px;height:64px;line-height:64px;font-size:24px;">Y</div>
+          <div>
+            <h2>You</h2>
+            <span class="screen-name">@you</span><br>
+            <span>Joined 2026</span>
+          </div>
+        </div>
+        <div class="stats" style="margin-top:10px;">
+          <div><strong id="profile-count">0</strong>updates</div>
+          <div><strong>42</strong>following</div>
+          <div><strong>128</strong>followers</div>
+        </div>
+      </div>
+      <h3 style="margin:10px 0 6px;">Updates</h3>
+      <ul class="timeline" id="profile-timeline"></ul>
+    </div>
+    <div class="sidebar">
+      <div class="sidebar-box">
+        <h3>About</h3>
+        <p>This is your Echo profile. Share what you're doing.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIND PEOPLE -->
+  <div id="page-find" class="page">
+    <div class="main">
+      <h3>Find People</h3>
+      <p style="margin:8px 0;">Search for people to follow on Echo.</p>
+      <div class="search-box">
+        <input type="text" placeholder="Username or name">
+        <button onclick="alert('Search results (demo)')">Search</button>
+      </div>
+      <div class="sidebar-box" style="margin-top:10px;">
+        <h3>Suggested</h3>
+        <div class="trend">@alex - Alex Rivera</div>
+        <div class="trend">@sam - Sam Chen</div>
+        <div class="trend">@jordan - Jordan Lee</div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="sidebar-box">
+        <h3>Popular</h3>
+        <div class="trend">#followfriday</div>
+        <div class="trend">#musicmonday</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="page-settings" class="page">
+    <div class="main">
+      <h3>Settings</h3>
+      <p style="margin:8px 0;">Account settings for Echo.</p>
+      <div class="sidebar-box">
+        <p><strong>Username:</strong> @you</p>
+        <p><strong>Name:</strong> You</p>
+        <p><strong>Email:</strong> you@example.com</p>
+        <p style="margin-top:8px;"><button onclick="alert('Saved (demo)')">Save changes</button></p>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="sidebar-box">
+        <h3>Options</h3>
+        <p>Notifications: On</p>
+        <p>Privacy: Public</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  &copy; 2026 Echo &nbsp;
+  <a href="#" onclick="showPage('home'); return false;">Home</a>
+  <a href="#">About</a>
+  <a href="#">Help</a>
+  <a href="#">Terms</a>
+  <a href="#">Privacy</a>
+</div>
+
+<script>
+var posts = [];
+try { posts = JSON.parse(localStorage.getItem('echoUpdates') || '[]'); } catch(e) { posts = []; }
+var initialPosts = [
+  { id: 1, user: "Alex Rivera", handle: "@alex", text: "Just shipped a small change. Echo now asks “What’s happening?” instead of “What are you doing?”", time: "about 2 hours ago", source: "web" },
+  { id: 2, user: "Sam Chen", handle: "@sam", text: "Loving the new search. Trending topics are fascinating right now.", time: "about 5 hours ago", source: "web" },
+  { id: 3, user: "Jordan Lee", handle: "@jordan", text: "Working on the next big thing. Simple is better.", time: "1 day ago", source: "mobile" },
+  { id: 4, user: "You", handle: "@you", text: "Just joined Echo! This place is so cool.", time: "2 days ago", source: "web" }
+];
+
+function loadPosts() {
+  if (posts.length === 0) {
+    for (var i = 0; i < initialPosts.length; i++) posts.push(initialPosts[i]);
+    save();
+  }
+  render();
+  renderProfile();
+}
+
+function save() {
+  try { localStorage.setItem('echoUpdates', JSON.stringify(posts)); } catch(e) {}
+}
+
+function render() {
+  var timeline = document.getElementById('timeline');
+  timeline.innerHTML = '';
+  for (var i = posts.length - 1; i >= 0; i--) {
+    var p = posts[i];
+    var li = document.createElement('li');
+    li.className = 'tweet';
+    li.innerHTML = '<div class="avatar"></div>' +
+      '<div class="tweet-body">' +
+        '<div><span class="username">' + p.user + '</span> <span class="screen-name">' + p.handle + '</span></div>' +
+        '<div class="tweet-text">' + escapeHtml(p.text) + '</div>' +
+        '<div class="tweet-meta">' + p.time + ' from ' + p.source + '</div>' +
+        '<div class="tweet-actions"><span onclick="reply(\'' + p.handle + '\')">Reply</span> <span onclick="favorite(' + p.id + ')">★ Favorite</span></div>' +
+      '</div>';
+    timeline.appendChild(li);
+  }
+  var count = document.getElementById('tweet-count');
+  if (count) count.innerHTML = posts.length;
+}
+
+function renderProfile() {
+  var timeline = document.getElementById('profile-timeline');
+  if (!timeline) return;
+  timeline.innerHTML = '';
+  var myPosts = [];
+  for (var i = 0; i < posts.length; i++) if (posts[i].handle === '@you') myPosts.push(posts[i]);
+  for (var j = myPosts.length - 1; j >= 0; j--) {
+    var p = myPosts[j];
+    var li = document.createElement('li');
+    li.className = 'tweet';
+    li.innerHTML = '<div class="avatar"></div>' +
+      '<div class="tweet-body">' +
+        '<div class="tweet-text">' + escapeHtml(p.text) + '</div>' +
+        '<div class="tweet-meta">' + p.time + ' from ' + p.source + '</div>' +
+      '</div>';
+    timeline.appendChild(li);
+  }
+  var pc = document.getElementById('profile-count');
+  if (pc) pc.innerHTML = myPosts.length;
+}
+
+function escapeHtml(text) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(text));
+  return div.innerHTML;
+}
+
+function reply(handle) {
+  showPage('home');
+  var input = document.getElementById('tweet-input');
+  input.value = handle + ' ';
+  input.focus();
+  updateCount();
+}
+
+function favorite(id) { alert('Favorited! (demo only)'); }
+
+function showPage(name) {
+  var pages = document.getElementsByClassName ? document.getElementsByClassName('page') : [];
+  if (pages.length) {
+    for (var i = 0; i < pages.length; i++) pages[i].className = 'page';
+    var target = document.getElementById('page-' + name);
+    if (target) target.className = 'page active';
+  }
+  var navs = ['home','profile','find','settings'];
+  for (var n = 0; n < navs.length; n++) {
+    var el = document.getElementById('nav-' + navs[n]);
+    if (el) el.className = (navs[n] === name) ? 'active' : '';
+  }
+  if (name === 'profile') renderProfile();
+}
+
+var input = document.getElementById('tweet-input');
+var countEl = document.getElementById('char-count');
+var btn = document.getElementById('tweet-btn');
+
+function updateCount() {
+  var remaining = 140 - input.value.length;
+  countEl.innerHTML = remaining;
+  countEl.className = remaining < 20 ? 'warning' : '';
+  btn.disabled = remaining < 0 || input.value.replace(/^\s+|\s+$/g, '') === '';
+}
+
+if (input.addEventListener) {
+  input.addEventListener('keyup', updateCount, false);
+  input.addEventListener('input', updateCount, false);
+} else if (input.attachEvent) {
+  input.attachEvent('onkeyup', updateCount);
+}
+updateCount();
+
+if (btn.addEventListener) {
+  btn.addEventListener('click', postUpdate, false);
+} else if (btn.attachEvent) {
+  btn.attachEvent('onclick', postUpdate);
+}
+
+function postUpdate() {
+  var text = input.value.replace(/^\s+|\s+$/g, '');
+  if (!text || text.length > 140) return;
+  posts.push({
+    id: new Date().getTime(),
+    user: "You",
+    handle: "@you",
+    text: text,
+    time: "just now",
+    source: "web"
+  });
+  save();
+  input.value = '';
+  updateCount();
+  render();
+  renderProfile();
+}
+
+loadPosts();
+</script>
+</body>
+</html>
