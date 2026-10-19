@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echo</title>
+<style>
+.echo-wrap { font-family: Arial, sans-serif; color: #333; font-size: 13px; margin: 0; padding: 0; }
+.echo-header { background: #1a1a1a; height: 70px; width: 100%; position: relative; }
+.echo-header-inner { max-width: 1000px; margin: 0 auto; padding: 0 20px; position: relative; height: 70px; }
+.nav-left { float: left; padding-top: 25px; }
+.nav-left a { color: #ccc; margin-right: 22px; font-size: 12px; font-weight: bold; text-decoration: none; }
+.echo-logo { position: absolute; left: 50%; top: 50%; margin-left: -24px; margin-top: -16px; }
+.echo-logo img { height: 32px; width: 48px; display: block; }
+.header-right { float: right; padding-top: 23px; }
+.header-right input { padding: 5px 10px; background: #333; color: #fff; border: 1px solid #555; border-radius: 14px; width: 150px; }
+.auth-box { max-width: 360px; margin: 40px auto; padding: 20px; background: #00a8ff; border: 1px solid #0088dd; border-radius: 8px; text-align: center; color: #fff; }
+.auth-box input { width: 100%; margin: 6px 0; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.auth-box button { margin-top: 10px; padding: 8px 16px; margin-right: 6px; cursor: pointer; }
+#debug { margin-top: 15px; font-size: 12px; color: #666; text-align: left; background: #f9f9f9; padding: 8px; border-radius: 4px; }
+#app-content { display: none; }
+.echo-container { width: 100%; padding: 12px 20px; overflow: hidden; }
+.echo-main { float: left; width: 64%; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 15px; min-height: 400px; }
+.composer { background: #f7f7f7; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 12px; }
+#tweet-input { width: 100%; height: 50px; border: 1px solid #ccc; border-radius: 4px; padding: 6px; }
+.tweet { overflow: hidden; padding: 10px 0; border-bottom: 1px solid #eee; }
+.avatar { float: left; width: 48px; height: 48px; background: #ddd center/cover; margin-right: 10px; border-radius: 4px; }
+.clear { clear: both; }
+</style>
+</head>
+<body>
+<div class="echo-wrap">
+  <div class="echo-header">
+    <div class="echo-header-inner">
+      <div class="nav-left"><a href="#">Home</a></div>
+      <div class="echo-logo"><img src="https://theechoblog.weebly.com/uploads/1/5/2/9/152994747/020d3ea5-85da-4cc9-a7d4-a661d55eb05e_orig.png" alt="Echo"></div>
+      <div class="clear"></div>
+    </div>
+  </div>
+
+  <div id="auth-screen" class="auth-box">
+    <h2>Welcome to Echo</h2>
+    <form id="auth-form">
+      <input id="email" type="email" placeholder="Email" required>
+      <input id="password" type="password" placeholder="Password" required>
+      <div>
+        <button type="button" id="btn-signin">Sign in</button>
+        <button type="button" id="btn-signup">Sign up</button>
+      </div>
+    </form>
+    <div id="debug">Waiting for click...</div>
+  </div>
+
+  <div id="app-content" class="echo-container">
+    <div class="echo-main">
+      <div>Signed in as <span id="user-email"></span> <button id="btn-signout">Sign out</button></div>
+      <div class="composer">
+        <textarea id="tweet-input" maxlength="140" placeholder="What are you doing?"></textarea>
+        <button id="btn-post">Echo</button>
+      </div>
+      <div id="timeline"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const debug = document.getElementById('debug');
+function log(msg) { debug.innerHTML += '<br>' + msg; console.log(msg); }
+
+const supabase = window.supabase.createClient(
+  'https://cyejudiqjpxbhjwjkmtx.supabase.co',
+  'sb_publishable_PvYzNoj3qTFzmgfT8aZzKA_CeoVlVrB'
+);
+
+let currentUser = null;
+
+function setupButtons() {
+  log('Setting up buttons...');
+  const signin = document.getElementById('btn-signin');
+  const signup = document.getElementById('btn-signup');
+  if (signin) {
+    signin.onclick = function() { log('Sign in clicked'); signIn(); };
+    log('Sign in button ready');
+  }
+  if (signup) {
+    signup.onclick = function() { log('Sign up clicked'); signUp(); };
+    log('Sign up button ready');
+  }
+  document.getElementById('btn-signout').onclick = signOut;
+  document.getElementById('btn-post').onclick = postUpdate;
+}
+
+async function signUp() {
+  log('Running signUp...');
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  log('Email: ' + email);
+  const { error } = await supabase.auth.signUp({ email, password });
+  if (error) { log('Error: ' + error.message); alert(error.message); }
+  else { log('Sign up success'); alert('Check your email to confirm, then sign in.'); }
+}
+
+async function signIn() {
+  log('Running signIn...');
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) { log('Error: ' + error.message); alert(error.message); }
+  else {
+    currentUser = data.user;
+    log('Signed in as ' + currentUser.email);
+    updateUI();
+    loadPosts();
+  }
+}
+
+async function signOut() {
+  await supabase.auth.signOut();
+  currentUser = null;
+  updateUI();
+  log('Signed out');
+}
+
+function updateUI() {
+  document.getElementById('auth-screen').style.display = currentUser ? 'none' : 'block';
+  document.getElementById('app-content').style.display = currentUser ? 'block' : 'none';
+  if (currentUser) document.getElementById('user-email').textContent = currentUser.email;
+}
+
+async function postUpdate() {
+  if (!currentUser) return;
+  const text = document.getElementById('tweet-input').value.trim();
+  if (!text) return;
+  const { error } = await supabase.from('posts').insert({ user_id: currentUser.id, text });
+  if (error) alert(error.message);
+  else { document.getElementById('tweet-input').value = ''; loadPosts(); }
+}
+
+async function loadPosts() {
+  const { data, error } = await supabase.from('posts').select('id, text, created_at, user_id').order('created_at', { ascending: false }).limit(30);
+  const timeline = document.getElementById('timeline');
+  if (error || !data) { timeline.innerHTML = 'Error loading posts'; return; }
+  timeline.innerHTML = data.map(p => `<div class="tweet"><div class="avatar"></div><div>${p.text}<br><small>${new Date(p.created_at).toLocaleString()}</small></div><div class="clear"></div></div>`).join('');
+}
+
+log('Script loaded');
+setTimeout(function() {
+  log('Init starting');
+  setupButtons();
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    currentUser = user;
+    updateUI();
+    if (currentUser) loadPosts();
+    log('Auth check done. User: ' + (user ? user.email : 'none'));
+  });
+}, 800);
+</script>
+</body>
+</html>
